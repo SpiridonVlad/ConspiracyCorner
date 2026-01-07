@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Custom conspiracy theme styles */
+:root {
+  --conspiracy-dark: #0a0a0f;
+  --conspiracy-darker: #050508;
+  --conspiracy-green: #00ff41;
+  --conspiracy-green-dim: #00cc33;
+  --conspiracy-red: #ff3333;
+  --conspiracy-gold: #ffd700;
+  --conspiracy-purple: #9333ea;
+}
+
+body {
+  @apply bg-gray-950 text-gray-100 font-mono;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Glowing effect for important elements */
+.glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.glow-red {
+  text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+}
+
+/* Matrix-style scrolling background animation */
+@keyframes matrix-rain {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* Mysterious fade-in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* Pulsing effect for status indicators */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

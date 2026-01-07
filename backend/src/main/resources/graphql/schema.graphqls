@@ -1,0 +1,139 @@
+# Conspiracy Theory Forum GraphQL Schema
+
+# Enums
+enum TheoryStatus {
+    UNVERIFIED
+    DEBUNKED
+    CONFIRMED
+}
+
+# Input Types
+input RegisterRequest {
+    username: String!
+    email: String!
+    password: String!
+    secretCode: String
+}
+
+input LoginRequest {
+    username: String!
+    password: String!
+    secretCode: String
+}
+
+input TheoryInput {
+    title: String!
+    content: String!
+    status: TheoryStatus
+    evidenceUrls: [String!]
+    anonymousPost: Boolean
+}
+
+input CommentInput {
+    content: String!
+    theoryId: ID!
+    anonymousPost: Boolean
+}
+
+input TheoryFilter {
+    status: TheoryStatus
+    keyword: String
+    hotOnly: Boolean
+    minCommentCount: Int
+}
+
+input PageInput {
+    page: Int!
+    size: Int!
+}
+
+# Types
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    anonymousMode: Boolean!
+    createdAt: String!
+    theories: [Theory!]
+    comments: [Comment!]
+}
+
+type Theory {
+    id: ID!
+    title: String!
+    content: String!
+    status: TheoryStatus!
+    evidenceUrls: [String!]!
+    postedAt: String!
+    updatedAt: String
+    isAnonymousPost: Boolean!
+    author: User
+    authorName: String!
+    comments: [Comment!]!
+    commentCount: Int!
+}
+
+type Comment {
+    id: ID!
+    content: String!
+    postedAt: String!
+    updatedAt: String
+    isAnonymousPost: Boolean!
+    author: User
+    authorName: String!
+    theory: Theory!
+}
+
+type AuthResponse {
+    token: String!
+    username: String!
+    userId: ID!
+    message: String!
+}
+
+type TheoriesPage {
+    content: [Theory!]!
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+}
+
+# Queries
+type Query {
+    # Theory queries
+    theories(filter: TheoryFilter, page: PageInput): [Theory!]!
+    theoriesPaginated(filter: TheoryFilter, page: PageInput): TheoriesPage!
+    theory(id: ID!): Theory
+    theoriesByUser(userId: ID!): [Theory!]!
+    hotTheories(page: PageInput): [Theory!]!
+    
+    # Comment queries
+    commentsByTheory(theoryId: ID!, page: PageInput): [Comment!]!
+    comment(id: ID!): Comment
+    
+    # User queries
+    user(id: ID!): User
+    me: User
+}
+
+# Mutations
+type Mutation {
+    # Authentication
+    register(input: RegisterRequest!): AuthResponse!
+    login(input: LoginRequest!): AuthResponse!
+    
+    # Theory mutations
+    createTheory(input: TheoryInput!): Theory!
+    updateTheory(id: ID!, input: TheoryInput!): Theory!
+    deleteTheory(id: ID!): Boolean!
+    
+    # Comment mutations
+    createComment(input: CommentInput!): Comment!
+    updateComment(id: ID!, content: String!): Comment!
+    deleteComment(id: ID!): Boolean!
+    
+    # User mutations
+    setAnonymousMode(anonymous: Boolean!): User!
+}
