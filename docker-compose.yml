@@ -1,0 +1,46 @@
+services:
+  backend:
+    build: ./backend
+    container_name: conspiracy-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/conspiracy_forum
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - db
+    networks:
+      - conspiracy-net
+
+  frontend:
+    build: ./frontend
+    container_name: conspiracy-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - conspiracy-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: conspiracy-db
+    environment:
+      - POSTGRES_DB=conspiracy_forum
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - conspiracy-net
+
+networks:
+  conspiracy-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
