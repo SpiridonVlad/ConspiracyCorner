@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Theory, TheoryStatus } from '../types';
+import { useMutation } from '@apollo/client/react';
+import { VOTE_THEORY } from '../graphql/operations';
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 
 interface TheoryCardProps {
   theory: Theory;
@@ -24,6 +28,41 @@ const statusConfig = {
 };
 
 export default function TheoryCard({ theory }: TheoryCardProps) {
+  const { isAuthenticated } = useAuth();
+  const [voteTheory] = useMutation(VOTE_THEORY);
+  const [localScore, setLocalScore] = useState(theory.score);
+  const [userVote, setUserVote] = useState(0);
+  
+  const handleVote = async (e: React.MouseEvent, value: number) => {
+    e.preventDefault(); // Prevent navigation
+    if (!isAuthenticated) return;
+
+    let scoreChange = 0;
+    
+    // Toggle logic - same as detail page
+    if (userVote === value) {
+        setUserVote(0);
+        scoreChange = -value;
+    } else if (userVote === 0) {
+        setUserVote(value);
+        scoreChange = value;
+    } else {
+        setUserVote(value);
+        scoreChange = -userVote + value;
+    }
+
+    const newScore = localScore + scoreChange;
+    setLocalScore(newScore);
+
+    try {
+      await voteTheory({ variables: { id: theory.id, value } });
+    } catch (err) {
+      setLocalScore(localScore);
+      setUserVote(userVote);
+      console.error("Vote failed", err);
+    }
+  };
+
   const status = statusConfig[theory.status];
   const formattedDate = new Date(theory.postedAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -59,9 +98,31 @@ export default function TheoryCard({ theory }: TheoryCardProps) {
       </p>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">
-          {theory.isAnonymousPost ? '🎭' : '👤'} {theory.authorName}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500">
+            {theory.isAnonymousPost ? '🎭' : '👤'} {theory.authorName}
+          </span>
+          
+          {/* Voting UI */}
+          <div className="flex items-center gap-2 bg-gray-800 rounded-lg px-2 py-1 border border-gray-700" onClick={(e) => e.preventDefault()}>
+            <button 
+              onClick={(e) => handleVote(e, 1)}
+              className={`hover:text-orange-500 transition-colors ${userVote === 1 ? 'text-orange-500' : 'text-gray-400'}`}
+            >
+              ▲
+            </button>
+            <span className={`text-sm font-bold ${localScore > 0 ? 'text-orange-400' : localScore < 0 ? 'text-blue-400' : 'text-gray-400'}`}>
+              {localScore}
+            </span>
+            <button 
+              onClick={(e) => handleVote(e, -1)}
+              className={`hover:text-blue-500 transition-colors ${userVote === -1 ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              ▼
+            </button>
+          </div>
+        </div>
+
         {theory.evidenceUrls.length > 0 && (
           <span className="text-xs text-purple-400 flex items-center gap-1">
             📎 {theory.evidenceUrls.length} evidence link{theory.evidenceUrls.length > 1 ? 's' : ''}

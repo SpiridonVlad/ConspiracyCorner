@@ -65,6 +65,10 @@ public class Theory {
     @Builder.Default
     private int commentCount = 0;
 
+    @Column(name = "score")
+    @Builder.Default
+    private int score = 0;
+
     public void incrementCommentCount() {
         this.commentCount++;
     }

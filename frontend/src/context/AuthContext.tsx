@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useMutation, useQuery } from '@apollo/client/react';
-import { LOGIN, REGISTER, GET_ME, SET_ANONYMOUS_MODE } from '../graphql/operations';
+import { LOGIN_USER, REGISTER_USER, GET_ME, SET_ANONYMOUS_MODE } from '../graphql/operations';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../types';
 
 interface MeQueryData {
@@ -48,8 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return meData?.me ?? localUser;
   }, [meData, meError, localUser]);
 
-  const [loginMutation] = useMutation<LoginMutationData>(LOGIN);
-  const [registerMutation] = useMutation<RegisterMutationData>(REGISTER);
+  const [loginMutation] = useMutation<LoginMutationData>(LOGIN_USER);
+  const [registerMutation] = useMutation<RegisterMutationData>(REGISTER_USER);
   const [setAnonymousModeMutation] = useMutation<SetAnonymousModeMutationData>(SET_ANONYMOUS_MODE);
 
   const login = useCallback(async (input: LoginRequest): Promise<AuthResponse> => {

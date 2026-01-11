@@ -11,6 +11,7 @@ export const THEORY_FRAGMENT = gql`
     postedAt
     updatedAt
     isAnonymousPost
+    score
     authorName
     commentCount
   }
@@ -23,6 +24,7 @@ export const COMMENT_FRAGMENT = gql`
     postedAt
     updatedAt
     isAnonymousPost
+    score
     authorName
   }
 `;
@@ -84,15 +86,6 @@ export const GET_HOT_THEORIES = gql`
   ${THEORY_FRAGMENT}
 `;
 
-export const GET_COMMENTS_BY_THEORY = gql`
-  query GetCommentsByTheory($theoryId: ID!, $page: PageInput) {
-    commentsByTheory(theoryId: $theoryId, page: $page) {
-      ...CommentFields
-    }
-  }
-  ${COMMENT_FRAGMENT}
-`;
-
 export const GET_ME = gql`
   query GetMe {
     me {
@@ -100,13 +93,14 @@ export const GET_ME = gql`
       username
       email
       anonymousMode
+      reputation
       createdAt
     }
   }
 `;
 
 // Mutations
-export const REGISTER = gql`
+export const REGISTER_USER = gql`
   mutation Register($input: RegisterRequest!) {
     register(input: $input) {
       token
@@ -117,13 +111,22 @@ export const REGISTER = gql`
   }
 `;
 
-export const LOGIN = gql`
+export const LOGIN_USER = gql`
   mutation Login($input: LoginRequest!) {
     login(input: $input) {
       token
       username
       userId
       message
+    }
+  }
+`;
+
+export const SET_ANONYMOUS_MODE = gql`
+  mutation SetAnonymousMode($anonymous: Boolean!) {
+    setAnonymousMode(anonymous: $anonymous) {
+      id
+      anonymousMode
     }
   }
 `;
@@ -176,11 +179,21 @@ export const DELETE_COMMENT = gql`
   }
 `;
 
-export const SET_ANONYMOUS_MODE = gql`
-  mutation SetAnonymousMode($anonymous: Boolean!) {
-    setAnonymousMode(anonymous: $anonymous) {
+// Vote Mutations
+export const VOTE_THEORY = gql`
+  mutation VoteTheory($id: ID!, $value: Int!) {
+    voteTheory(id: $id, value: $value) {
       id
-      anonymousMode
+      score
+    }
+  }
+`;
+
+export const VOTE_COMMENT = gql`
+  mutation VoteComment($id: ID!, $value: Int!) {
+    voteComment(id: $id, value: $value) {
+      id
+      score
     }
   }
 `;

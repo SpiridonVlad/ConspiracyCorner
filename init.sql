@@ -12,6 +12,7 @@ CREATE TABLE users (
     secret_code VARCHAR(255),
     role VARCHAR(50) NOT NULL,
     is_anonymous BOOLEAN DEFAULT FALSE,
+    reputation INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE theories (
     updated_at TIMESTAMP,
     is_anonymous_post BOOLEAN DEFAULT FALSE,
     comment_count INTEGER DEFAULT 0,
+    score INTEGER DEFAULT 0,
     author_id BIGINT NOT NULL,
     CONSTRAINT fk_theory_author FOREIGN KEY (author_id) REFERENCES users(id)
 );
@@ -42,8 +44,27 @@ CREATE TABLE comments (
     is_anonymous_post BOOLEAN DEFAULT FALSE,
     author_id BIGINT NOT NULL,
     theory_id BIGINT NOT NULL,
+    score INTEGER DEFAULT 0,
     CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT fk_comment_theory FOREIGN KEY (theory_id) REFERENCES theories(id)
+);
+
+CREATE TABLE votes (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    theory_id BIGINT,
+    comment_id BIGINT,
+    value INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_vote_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_vote_theory FOREIGN KEY (theory_id) REFERENCES theories(id),
+    CONSTRAINT fk_vote_comment FOREIGN KEY (comment_id) REFERENCES comments(id),
+    CONSTRAINT uq_vote_user_theory UNIQUE (user_id, theory_id),
+    CONSTRAINT uq_vote_user_comment UNIQUE (user_id, comment_id),
+    CONSTRAINT chk_vote_target CHECK (
+        (theory_id IS NOT NULL AND comment_id IS NULL) OR 
+        (theory_id IS NULL AND comment_id IS NOT NULL)
+    )
 );
 
 

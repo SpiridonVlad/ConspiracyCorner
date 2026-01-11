@@ -11,6 +11,7 @@ export interface User {
   username: string;
   email: string;
   anonymousMode: boolean;
+  reputation: number;
   createdAt: string;
   theories?: Theory[];
   comments?: Comment[];
@@ -25,6 +26,7 @@ export interface Theory {
   postedAt: string;
   updatedAt?: string;
   isAnonymousPost: boolean;
+  score: number;
   author?: User;
   authorName: string;
   comments: Comment[];
@@ -37,6 +39,7 @@ export interface Comment {
   postedAt: string;
   updatedAt?: string;
   isAnonymousPost: boolean;
+  score: number;
   author?: User;
   authorName: string;
   theory: Theory;

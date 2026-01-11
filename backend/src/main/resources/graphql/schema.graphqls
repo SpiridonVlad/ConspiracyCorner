@@ -53,6 +53,7 @@ type User {
     username: String!
     email: String!
     anonymousMode: Boolean!
+    reputation: Int!
     createdAt: String!
     theories: [Theory!]
     comments: [Comment!]
@@ -67,6 +68,7 @@ type Theory {
     postedAt: String!
     updatedAt: String
     isAnonymousPost: Boolean!
+    score: Int!
     author: User
     authorName: String!
     comments: [Comment!]!
@@ -79,6 +81,7 @@ type Comment {
     postedAt: String!
     updatedAt: String
     isAnonymousPost: Boolean!
+    score: Int!
     author: User
     authorName: String!
     theory: Theory!
@@ -134,6 +137,10 @@ type Mutation {
     updateComment(id: ID!, content: String!): Comment!
     deleteComment(id: ID!): Boolean!
     
+    # Vote mutations
+    voteTheory(id: ID!, value: Int!): Theory!
+    voteComment(id: ID!, value: Int!): Comment!
+
     # User mutations
     setAnonymousMode(anonymous: Boolean!): User!
 }

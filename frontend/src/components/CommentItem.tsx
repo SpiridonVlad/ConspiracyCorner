@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { Comment } from '../types';
-import { DELETE_COMMENT, UPDATE_COMMENT, GET_THEORY } from '../graphql/operations';
+import { DELETE_COMMENT, UPDATE_COMMENT, GET_THEORY, VOTE_COMMENT } from '../graphql/operations';
 import { useAuth } from '../context/AuthContext';
 
 interface CommentItemProps {
@@ -15,6 +15,8 @@ export default function CommentItem({ comment, theoryId, currentUserId }: Commen
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [error, setError] = useState('');
+  const [localScore, setLocalScore] = useState(comment.score);
+  const [userVote, setUserVote] = useState(0); // 0 = none, 1 = up, -1 = down
 
   const [updateComment, { loading: updating }] = useMutation(UPDATE_COMMENT, {
     refetchQueries: [{ query: GET_THEORY, variables: { id: theoryId } }],
@@ -23,6 +25,8 @@ export default function CommentItem({ comment, theoryId, currentUserId }: Commen
   const [deleteComment, { loading: deleting }] = useMutation(DELETE_COMMENT, {
     refetchQueries: [{ query: GET_THEORY, variables: { id: theoryId } }],
   });
+  
+  const [voteComment] = useMutation(VOTE_COMMENT);
 
   const isOwner = currentUserId && comment.author?.id === currentUserId;
 
@@ -52,6 +56,39 @@ export default function CommentItem({ comment, theoryId, currentUserId }: Commen
       setError(err instanceof Error ? err.message : 'Failed to delete comment');
     }
   };
+  
+  const handleVote = async (value: number) => {
+    if (!isAuthenticated) return;
+
+    let scoreChange = 0;
+    
+    // Toggle logic
+    if (userVote === value) {
+        // Removing vote
+        setUserVote(0);
+        scoreChange = -value;
+    } else if (userVote === 0) {
+        // New vote
+        setUserVote(value);
+        scoreChange = value;
+    } else {
+        // Switching vote (e.g. from -1 to 1)
+        setUserVote(value);
+        scoreChange = -userVote + value; // e.g. -(-1) + 1 = 2
+    }
+
+    const newScore = localScore + scoreChange;
+    setLocalScore(newScore);
+
+    try {
+      await voteComment({ variables: { id: comment.id, value } });
+    } catch (err) {
+      // Revert on error
+      setLocalScore(localScore);
+      setUserVote(userVote); 
+      console.error("Vote failed", err);
+    }
+  };
 
   const formattedDate = new Date(comment.postedAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -61,70 +98,84 @@ export default function CommentItem({ comment, theoryId, currentUserId }: Commen
     minute: '2-digit',
   });
 
+  // Calculate author reputation style (simple mock for now based on context, or use optional chaining)
+  const authorRep = comment.author?.reputation || 0;
+
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 animate-fade-in">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">
-            {comment.isAnonymousPost ? '🎭' : '👤'} {comment.authorName}
-          </span>
-          <span className="text-xs text-gray-600">•</span>
-          <span className="text-xs text-gray-500">{formattedDate}</span>
-          {comment.updatedAt && (
-            <span className="text-xs text-gray-600 italic">(edited)</span>
-          )}
-        </div>
-        {isAuthenticated && isOwner && !isEditing && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-xs text-gray-400 hover:text-green-400 transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-xs text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
-            >
-              {deleting ? '...' : 'Delete'}
-            </button>
-          </div>
-        )}
+    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 animate-fade-in relative">
+      {/* Vote Side Bar */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col items-center pt-4 bg-gray-900/30 rounded-l-lg border-r border-gray-700/30">
+        <button onClick={() => handleVote(1)} className={`text-xs hover:text-orange-500 ${userVote === 1 ? 'text-orange-500' : 'text-gray-500'}`}>▲</button>
+        <span className={`text-xs font-bold my-1 ${localScore > 0 ? 'text-orange-400' : localScore < 0 ? 'text-blue-400' : 'text-gray-500'}`}>{localScore}</span>
+        <button onClick={() => handleVote(-1)} className={`text-xs hover:text-blue-500 ${userVote === -1 ? 'text-blue-500' : 'text-gray-500'}`}>▼</button>
       </div>
 
-      {isEditing ? (
-        <div className="space-y-2">
-          <textarea
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-gray-100 focus:outline-none focus:border-green-500 transition-colors resize-none"
-            rows={3}
-          />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <div className="flex gap-2">
-            <button
-              onClick={handleUpdate}
-              disabled={updating}
-              className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded-lg text-sm transition-colors disabled:opacity-50"
-            >
-              {updating ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setEditContent(comment.content);
-                setError('');
-              }}
-              className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded-lg text-sm transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
+      <div className="pl-6">
+        <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">
+                {comment.isAnonymousPost ? '🎭' : '👤'} {comment.authorName}
+            </span>
+            {authorRep > 0 && (
+                 <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    Rep: {authorRep}
+                 </span>
+            )}
+            <span className="text-xs text-gray-600">•</span>
+            <span className="text-xs text-gray-500">{formattedDate}</span>
+            {comment.updatedAt && (
+                <span className="text-xs text-gray-600 italic">(edited)</span>
+            )}
+            </div>
+            {isAuthenticated && isOwner && !isEditing && (
+            <div className="flex items-center gap-2">
+                <button
+                onClick={() => setIsEditing(true)}
+                className="text-xs text-gray-400 hover:text-green-400 transition-colors"
+                >
+                Edit
+                </button>
+                <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-xs text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                >
+                {deleting ? '...' : 'Delete'}
+                </button>
+            </div>
+            )}
         </div>
-      ) : (
-        <p className="text-gray-300 whitespace-pre-wrap">{comment.content}</p>
-      )}
+
+        {isEditing ? (
+            <div className="space-y-2">
+            <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full bg-gray-900 text-gray-100 border border-gray-700 rounded p-2 focus:ring-1 focus:ring-green-500 focus:border-green-500 outline-none resize-none min-h-[100px]"
+            />
+            <div className="flex items-center gap-2">
+                <button
+                onClick={handleUpdate}
+                disabled={updating}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                {updating ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                onClick={() => setIsEditing(false)}
+                className="px-3 py-1 bg-gray-700 text-gray-300 text-sm rounded hover:bg-gray-600 transition-colors"
+                >
+                Cancel
+                </button>
+            </div>
+            {error && <p className="text-red-400 text-xs">{error}</p>}
+            </div>
+        ) : (
+            <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+            {comment.content}
+            </p>
+        )}
+      </div>
     </div>
   );
 }

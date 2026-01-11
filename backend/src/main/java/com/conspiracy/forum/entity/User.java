@@ -54,6 +54,10 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean anonymousMode = false;
 
+    @Column(name = "reputation")
+    @Builder.Default
+    private int reputation = 0;
+
     @Column(name = "created_at")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

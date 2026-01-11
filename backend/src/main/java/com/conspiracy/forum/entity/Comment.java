@@ -43,4 +43,8 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theory_id", nullable = false)
     private Theory theory;
+
+    @Column(name = "score")
+    @Builder.Default
+    private int score = 0;
 }
