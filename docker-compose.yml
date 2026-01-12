@@ -11,7 +11,10 @@ services:
       - MAIL_USERNAME=iustin.spiridon@gmail.com
       - MAIL_PASSWORD=zcpv ftnf utmr eckh
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      populator:
+        condition: service_completed_successfully
     networks:
       - conspiracy-net
 
@@ -39,6 +42,27 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - conspiracy-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d conspiracy_forum"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  populator:
+    build: ./populator
+    container_name: conspiracy-populator
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=conspiracy_forum
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - conspiracy-net
+    restart: "no"
 
 networks:
   conspiracy-net:

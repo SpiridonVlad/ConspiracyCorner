@@ -3,7 +3,7 @@ import { Theory, TheoryStatus } from '../types';
 import { useMutation } from '@apollo/client/react';
 import { VOTE_THEORY } from '../graphql/operations';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TheoryCardProps {
   theory: Theory;
@@ -30,8 +30,14 @@ const statusConfig = {
 export default function TheoryCard({ theory }: TheoryCardProps) {
   const { isAuthenticated } = useAuth();
   const [voteTheory] = useMutation(VOTE_THEORY);
-  const [localScore, setLocalScore] = useState(theory.score);
+  const [localScore, setLocalScore] = useState(0);
   const [userVote, setUserVote] = useState(0);
+
+  useEffect(() => {
+    if (theory) {
+      setLocalScore(theory.score ?? 0);
+    }
+  }, [theory]);
   
   const handleVote = async (e: React.MouseEvent, value: number) => {
     e.preventDefault(); // Prevent navigation
