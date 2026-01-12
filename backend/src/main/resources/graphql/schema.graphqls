@@ -21,6 +21,15 @@ input LoginRequest {
     secretCode: String
 }
 
+input ChangePasswordRequest {
+    currentPassword: String!
+    newPassword: String!
+}
+
+input ForgotPasswordRequest {
+    email: String!
+}
+
 input TheoryInput {
     title: String!
     content: String!
@@ -32,6 +41,7 @@ input TheoryInput {
 input CommentInput {
     content: String!
     theoryId: ID!
+    parentId: ID
     anonymousPost: Boolean
 }
 
@@ -85,6 +95,8 @@ type Comment {
     author: User
     authorName: String!
     theory: Theory!
+    parent: Comment
+    replies: [Comment!]!
 }
 
 type AuthResponse {
@@ -92,6 +104,7 @@ type AuthResponse {
     username: String!
     userId: ID!
     message: String!
+    mustChangePassword: Boolean!
 }
 
 type TheoriesPage {
@@ -114,6 +127,7 @@ type Query {
     
     # Comment queries
     commentsByTheory(theoryId: ID!, page: PageInput): [Comment!]!
+    rootCommentsByTheory(theoryId: ID!): [Comment!]!
     comment(id: ID!): Comment
     
     # User queries
@@ -126,6 +140,8 @@ type Mutation {
     # Authentication
     register(input: RegisterRequest!): AuthResponse!
     login(input: LoginRequest!): AuthResponse!
+    changePassword(input: ChangePasswordRequest!): Boolean!
+    forgotPassword(input: ForgotPasswordRequest!): Boolean!
     
     # Theory mutations
     createTheory(input: TheoryInput!): Theory!

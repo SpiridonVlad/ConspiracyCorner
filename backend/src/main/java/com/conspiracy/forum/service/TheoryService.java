@@ -41,25 +41,21 @@ public class TheoryService {
             return theoryRepository.findAll(pageable);
         }
 
-        // Hot theories filter
         if (Boolean.TRUE.equals(filter.getHotOnly())) {
             int minComments = filter.getMinCommentCount() != null ? 
                     filter.getMinCommentCount() : HOT_THEORY_MIN_COMMENTS;
             return theoryRepository.findHotTheories(minComments, pageable);
         }
 
-        // Normalize empty keyword to null
         String keyword = filter.getKeyword();
         if (keyword != null && keyword.trim().isEmpty()) {
             keyword = null;
         }
 
-        // If no filters are provided, just return all
         if (filter.getStatus() == null && keyword == null) {
             return theoryRepository.findAll(pageable);
         }
 
-        // Filter by status and/or keyword
         return theoryRepository.findByFilters(filter.getStatus(), keyword, pageable);
     }
 
@@ -106,7 +102,6 @@ public class TheoryService {
     public Theory updateTheory(Long id, TheoryInput input, String username) {
         Theory theory = getTheoryById(id);
         
-        // Check ownership
         if (!theory.getAuthor().getUsername().equals(username)) {
             throw new UnauthorizedException("You can only update your own theories");
         }
@@ -142,7 +137,6 @@ public class TheoryService {
     public boolean deleteTheory(Long id, String username) {
         Theory theory = getTheoryById(id);
         
-        // Check ownership
         if (!theory.getAuthor().getUsername().equals(username)) {
             throw new UnauthorizedException("You can only delete your own theories");
         }

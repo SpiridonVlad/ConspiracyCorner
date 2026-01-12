@@ -24,10 +24,12 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  mustChangePassword: boolean;
   login: (input: LoginRequest) => Promise<AuthResponse>;
   register: (input: RegisterRequest) => Promise<AuthResponse>;
   logout: () => void;
   toggleAnonymousMode: () => Promise<void>;
+  clearMustChangePassword: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,12 +37,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [localUser, setLocalUser] = useState<User | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState<boolean>(
+    localStorage.getItem('mustChangePassword') === 'true'
+  );
 
   const { data: meData, loading: meLoading, refetch: refetchMe, error: meError } = useQuery<MeQueryData>(GET_ME, {
     skip: !token,
   });
 
-  // Derive user from query data or local state
   const user = useMemo(() => {
     if (meError) {
       return null;
@@ -58,6 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = data.login;
     localStorage.setItem('token', response.token);
     setToken(response.token);
+    if (response.mustChangePassword) {
+      localStorage.setItem('mustChangePassword', 'true');
+      setMustChangePassword(true);
+    }
     await refetchMe();
     return response;
   }, [loginMutation, refetchMe]);
@@ -74,8 +82,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('mustChangePassword');
     setToken(null);
     setLocalUser(null);
+    setMustChangePassword(false);
+  }, []);
+
+  const clearMustChangePassword = useCallback(() => {
+    localStorage.removeItem('mustChangePassword');
+    setMustChangePassword(false);
   }, []);
 
   const toggleAnonymousMode = useCallback(async () => {
@@ -88,11 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, setAnonymousModeMutation]);
 
-  // Handle auth errors by clearing token
   const effectiveToken = meError ? null : token;
   if (meError && token) {
     localStorage.removeItem('token');
-    // Schedule token clear for next render to avoid setState during render
     setTimeout(() => setToken(null), 0);
   }
 
@@ -101,11 +114,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     token: effectiveToken,
     isAuthenticated: !!effectiveToken && !!user,
     isLoading: meLoading,
+    mustChangePassword,
     login,
     register,
     logout,
     toggleAnonymousMode,
-  }), [user, effectiveToken, meLoading, login, register, logout, toggleAnonymousMode]);
+    clearMustChangePassword,
+  }), [user, effectiveToken, meLoading, mustChangePassword, login, register, logout, toggleAnonymousMode, clearMustChangePassword]);
 
   return (
     <AuthContext.Provider value={contextValue}>

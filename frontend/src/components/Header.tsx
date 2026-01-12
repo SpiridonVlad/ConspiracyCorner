@@ -115,6 +115,13 @@ export default function Header() {
                     >
                       📜 My Theories
                     </Link>
+                    <Link
+                      to="/change-password"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-green-400"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      🔑 Change Password
+                    </Link>
                     <hr className="border-gray-700 my-1" />
                     <button
                       onClick={handleLogout}

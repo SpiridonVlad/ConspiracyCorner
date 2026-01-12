@@ -1,4 +1,5 @@
 
+DROP TABLE IF EXISTS votes;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS theory_evidence_urls;
 DROP TABLE IF EXISTS theories;
@@ -13,7 +14,8 @@ CREATE TABLE users (
     role VARCHAR(50) NOT NULL,
     is_anonymous BOOLEAN DEFAULT FALSE,
     reputation INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    must_change_password BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE theories (
@@ -44,9 +46,11 @@ CREATE TABLE comments (
     is_anonymous_post BOOLEAN DEFAULT FALSE,
     author_id BIGINT NOT NULL,
     theory_id BIGINT NOT NULL,
+    parent_id BIGINT,
     score INTEGER DEFAULT 0,
     CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id),
-    CONSTRAINT fk_comment_theory FOREIGN KEY (theory_id) REFERENCES theories(id)
+    CONSTRAINT fk_comment_theory FOREIGN KEY (theory_id) REFERENCES theories(id),
+    CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
 );
 
 CREATE TABLE votes (

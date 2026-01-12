@@ -1,5 +1,3 @@
-// TypeScript types matching the GraphQL schema
-
 export enum TheoryStatus {
   UNVERIFIED = 'UNVERIFIED',
   DEBUNKED = 'DEBUNKED',
@@ -43,6 +41,8 @@ export interface Comment {
   author?: User;
   authorName: string;
   theory: Theory;
+  parent?: Comment;
+  replies: Comment[];
 }
 
 export interface AuthResponse {
@@ -50,6 +50,7 @@ export interface AuthResponse {
   username: string;
   userId: string;
   message: string;
+  mustChangePassword: boolean;
 }
 
 export interface TheoriesPage {
@@ -86,6 +87,15 @@ export interface LoginRequest {
   secretCode?: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
 export interface TheoryInput {
   title: string;
   content: string;
@@ -97,5 +107,6 @@ export interface TheoryInput {
 export interface CommentInput {
   content: string;
   theoryId: string;
+  parentId?: string;
   anonymousPost?: boolean;
 }

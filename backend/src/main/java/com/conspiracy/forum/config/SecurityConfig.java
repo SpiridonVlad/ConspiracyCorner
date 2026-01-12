@@ -25,10 +25,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF protection is disabled because this is a stateless REST/GraphQL API
-                // that uses JWT tokens in Authorization headers. CSRF attacks are not applicable
-                // since authentication is token-based, not cookie-based, and the API does not
-                // use browser cookies for authentication.
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/graphql").permitAll()

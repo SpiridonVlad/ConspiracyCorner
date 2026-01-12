@@ -21,6 +21,10 @@ spring:
     graphiql:
       enabled: true
     path: /graphql
+  
+  mail:
+    host: localhost
+    port: 25
 
 server:
   port: 8080

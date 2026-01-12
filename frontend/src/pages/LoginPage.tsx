@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already authenticated
   if (isAuthenticated) {
     navigate('/');
     return null;
@@ -25,12 +24,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login({
+      const response = await login({
         username,
         password,
         secretCode: secretCode || undefined,
       });
-      navigate('/');
+      
+      // If mustChangePassword is true, redirect to change password page
+      if (response.mustChangePassword) {
+        navigate('/change-password');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Check your credentials.');
     } finally {
@@ -120,6 +125,11 @@ export default function LoginPage() {
         New truth seeker?{' '}
         <Link to="/register" className="text-green-400 hover:text-green-300 transition-colors">
           Join the movement
+        </Link>
+      </p>
+      <p className="text-center text-gray-500 mt-2">
+        <Link to="/forgot-password" className="text-gray-400 hover:text-green-300 transition-colors">
+          Forgot your password?
         </Link>
       </p>
     </div>

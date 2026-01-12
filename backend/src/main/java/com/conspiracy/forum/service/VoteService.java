@@ -37,21 +37,17 @@ public class VoteService {
         if (existingVote.isPresent()) {
             Vote vote = existingVote.get();
             if (vote.getValue() == value) {
-                // Toggle vote: remove if same value
                 voteRepository.delete(vote);
                 theory.setScore(theory.getScore() - value);
-                updateUserReputation(theory.getAuthor(), -value); // Decrease rep if vote removed
+                updateUserReputation(theory.getAuthor(), -value);
             } else {
-                // Change vote
-                int scoreChange = value - vote.getValue(); // e.g., -1 to 1 is +2
+                int scoreChange = value - vote.getValue();
                 theory.setScore(theory.getScore() + scoreChange);
                 vote.setValue(value);
                 voteRepository.save(vote);
-                // Update rep: remove old value effect, add new value effect
                 updateUserReputation(theory.getAuthor(), scoreChange);
             }
         } else {
-            // New vote
             Vote vote = Vote.builder()
                     .user(user)
                     .theory(theory)
@@ -79,13 +75,10 @@ public class VoteService {
         if (existingVote.isPresent()) {
             Vote vote = existingVote.get();
             if (vote.getValue() == value) {
-                // Toggle vote
                 voteRepository.delete(vote);
                 comment.setScore(comment.getScore() - value);
-                // Comments affect rep less or not at all? Let's say comments affect rep by 1 too
                 updateUserReputation(comment.getAuthor(), -value);
             } else {
-                // Change vote
                 int scoreChange = value - vote.getValue();
                 comment.setScore(comment.getScore() + scoreChange);
                 vote.setValue(value);
@@ -93,7 +86,6 @@ public class VoteService {
                 updateUserReputation(comment.getAuthor(), scoreChange);
             }
         } else {
-            // New vote
             Vote vote = Vote.builder()
                     .user(user)
                     .comment(comment)

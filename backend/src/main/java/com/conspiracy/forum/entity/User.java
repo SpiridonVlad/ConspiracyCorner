@@ -62,6 +62,10 @@ public class User implements UserDetails {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "must_change_password")
+    @Builder.Default
+    private boolean mustChangePassword = false;
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Theory> theories = new ArrayList<>();

@@ -5,9 +5,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-/**
- * Utility class for common pagination operations.
- */
 public final class PaginationUtils {
 
     private static final int DEFAULT_PAGE = 0;
@@ -15,26 +12,12 @@ public final class PaginationUtils {
     private static final int MAX_SIZE = 100;
 
     private PaginationUtils() {
-        // Utility class - prevent instantiation
     }
 
-    /**
-     * Creates a Pageable object from PageInput with default sorting by postedAt descending.
-     *
-     * @param pageInput the page input from the request
-     * @return a configured Pageable object
-     */
     public static Pageable createPageable(PageInput pageInput) {
         return createPageable(pageInput, Sort.by(Sort.Direction.DESC, "postedAt"));
     }
 
-    /**
-     * Creates a Pageable object from PageInput with custom sorting.
-     *
-     * @param pageInput the page input from the request
-     * @param sort the sort configuration
-     * @return a configured Pageable object
-     */
     public static Pageable createPageable(PageInput pageInput, Sort sort) {
         int page = DEFAULT_PAGE;
         int size = DEFAULT_SIZE;

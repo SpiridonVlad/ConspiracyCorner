@@ -39,7 +39,6 @@ export default function TheoryCard({ theory }: TheoryCardProps) {
 
     let scoreChange = 0;
     
-    // Toggle logic - same as detail page
     if (userVote === value) {
         setUserVote(0);
         scoreChange = -value;

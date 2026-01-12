@@ -1,5 +1,6 @@
 package com.conspiracy.forum.service;
 
+import com.conspiracy.forum.config.TestMailConfig;
 import com.conspiracy.forum.dto.AuthResponse;
 import com.conspiracy.forum.dto.LoginRequest;
 import com.conspiracy.forum.dto.RegisterRequest;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@Import(TestMailConfig.class)
 class AuthServiceTest {
 
     @Autowired
@@ -79,7 +82,6 @@ class AuthServiceTest {
 
     @Test
     void login_ShouldReturnToken_WhenValidCredentials() {
-        // First register
         RegisterRequest registerRequest = RegisterRequest.builder()
                 .username("testuser")
                 .email("test@example.com")
@@ -87,7 +89,6 @@ class AuthServiceTest {
                 .build();
         authService.register(registerRequest);
 
-        // Then login
         LoginRequest loginRequest = LoginRequest.builder()
                 .username("testuser")
                 .password("password123")

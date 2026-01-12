@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class CommentInput {
     private String content;
     private Long theoryId;
+    private Long parentId;
     private Boolean anonymousPost;
 }

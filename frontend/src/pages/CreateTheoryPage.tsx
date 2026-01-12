@@ -25,7 +25,6 @@ export default function CreateTheoryPage() {
   const [error, setError] = useState('');
   const [formInitialized, setFormInitialized] = useState(false);
 
-  // Fetch existing theory for editing
   const { data: theoryData, loading: theoryLoading } = useQuery<{ theory: Theory }>(
     GET_THEORY,
     {
@@ -34,7 +33,6 @@ export default function CreateTheoryPage() {
     }
   );
 
-  // Populate form when editing - this is an intentional sync from external data
   useEffect(() => {
     if (theoryData?.theory && !formInitialized) {
       const theory = theoryData.theory;
@@ -79,7 +77,6 @@ export default function CreateTheoryPage() {
     e.preventDefault();
     setError('');
 
-    // Validation
     if (title.length < 5) {
       setError('Title must be at least 5 characters');
       return;
@@ -128,7 +125,6 @@ export default function CreateTheoryPage() {
 
   if (theoryLoading) return <Loading />;
 
-  // Check ownership for editing
   if (isEditing && theoryData?.theory && theoryData.theory.author?.id !== user?.id) {
     return (
       <div className="text-center py-12">

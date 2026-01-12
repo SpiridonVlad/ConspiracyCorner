@@ -31,6 +31,11 @@ public class CommentResolver {
     }
 
     @QueryMapping
+    public List<Comment> rootCommentsByTheory(@Argument Long theoryId) {
+        return commentService.getRootCommentsByTheory(theoryId);
+    }
+
+    @QueryMapping
     public Comment comment(@Argument Long id) {
         return commentService.getCommentById(id);
     }
@@ -72,5 +77,15 @@ public class CommentResolver {
     @SchemaMapping(typeName = "Comment", field = "theory")
     public Theory getTheory(Comment comment) {
         return comment.getTheory();
+    }
+
+    @SchemaMapping(typeName = "Comment", field = "parent")
+    public Comment getParent(Comment comment) {
+        return comment.getParent();
+    }
+
+    @SchemaMapping(typeName = "Comment", field = "replies")
+    public List<Comment> getReplies(Comment comment) {
+        return commentService.getReplies(comment.getId());
     }
 }

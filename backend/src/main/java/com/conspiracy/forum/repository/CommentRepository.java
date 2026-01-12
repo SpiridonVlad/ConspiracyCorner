@@ -11,7 +11,10 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByTheoryIdOrderByPostedAtDesc(Long theoryId);
+    List<Comment> findByTheoryIdAndParentIsNullOrderByPostedAtDesc(Long theoryId);
+    List<Comment> findByParentIdOrderByPostedAtAsc(Long parentId);
     Page<Comment> findByTheoryId(Long theoryId, Pageable pageable);
+    Page<Comment> findByTheoryIdAndParentIsNull(Long theoryId, Pageable pageable);
     Page<Comment> findByAuthorId(Long authorId, Pageable pageable);
     int countByTheoryId(Long theoryId);
 }

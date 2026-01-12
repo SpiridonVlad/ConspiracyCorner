@@ -9,10 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthResponse {
-    private String token;
-    private String username;
-    private Long userId;
-    private String message;
-    private boolean mustChangePassword;
+public class ForgotPasswordRequest {
+    private String email;
 }

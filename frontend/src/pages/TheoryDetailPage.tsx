@@ -1,12 +1,17 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_THEORY, DELETE_THEORY, GET_THEORIES_PAGINATED, VOTE_THEORY } from '../graphql/operations';
-import { Theory, TheoryStatus } from '../types';
+import { Theory, TheoryStatus, Comment } from '../types';
 import { useAuth } from '../context/AuthContext';
 import CommentItem from '../components/CommentItem';
 import CommentForm from '../components/CommentForm';
 import Loading from '../components/Loading';
 import { useState, useEffect } from 'react';
+
+interface TheoryQueryData {
+  theory: Theory;
+  rootCommentsByTheory: Comment[];
+}
 
 const statusConfig = {
   [TheoryStatus.UNVERIFIED]: {
@@ -37,7 +42,7 @@ export default function TheoryDetailPage() {
   const [localScore, setLocalScore] = useState(0);
   const [userVote, setUserVote] = useState(0);
 
-  const { data, loading, error } = useQuery<{ theory: Theory }>(GET_THEORY, {
+  const { data, loading, error } = useQuery<TheoryQueryData>(GET_THEORY, {
     variables: { id },
     skip: !id,
   });
@@ -53,7 +58,6 @@ export default function TheoryDetailPage() {
   const isOwner = user && theory?.author?.id === user.id;
   const status = theory && theory.status ? statusConfig[theory.status] : null;
 
-  // Sync effect
   useEffect(() => {
     if (theory) {
         setLocalScore(theory.score ?? 0);
@@ -70,7 +74,6 @@ export default function TheoryDetailPage() {
 
     let scoreChange = 0;
     
-    // Toggle logic
     if (userVote === value) {
         setUserVote(0);
         scoreChange = -value;
@@ -139,10 +142,9 @@ export default function TheoryDetailPage() {
     );
   }
 
-  // Calculate author reputation style
   const authorRep = theory.author?.reputation || 0;
   const evidenceUrls = theory.evidenceUrls || [];
-  const comments = theory.comments || [];
+  const comments = data?.rootCommentsByTheory || [];
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in pb-12">

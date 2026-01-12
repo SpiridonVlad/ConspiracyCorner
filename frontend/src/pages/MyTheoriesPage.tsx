@@ -1,21 +1,39 @@
-import { useQuery } from '@apollo/client/react';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { Link } from 'react-router-dom';
-import { GET_THEORIES_BY_USER } from '../graphql/operations';
+import { GET_THEORIES_BY_USER, DELETE_THEORY } from '../graphql/operations';
 import { Theory } from '../types';
 import { useAuth } from '../context/AuthContext';
 import TheoryCard from '../components/TheoryCard';
 import Loading from '../components/Loading';
+import { useState } from 'react';
 
 export default function MyTheoriesPage() {
   const { user, isAuthenticated } = useAuth();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data, loading, error } = useQuery<{ theoriesByUser: Theory[] }>(
+  const { data, loading, error, refetch } = useQuery<{ theoriesByUser: Theory[] }>(
     GET_THEORIES_BY_USER,
     {
       variables: { userId: user?.id },
       skip: !user?.id,
     }
   );
+
+  const [deleteTheory] = useMutation(DELETE_THEORY, {
+    onCompleted: () => {
+      setDeletingId(null);
+      refetch();
+    },
+    onError: () => {
+      setDeletingId(null);
+    },
+  });
+
+  const handleDelete = async (theoryId: string) => {
+    if (!confirm('Are you sure you want to delete this theory? This cannot be undone.')) return;
+    setDeletingId(theoryId);
+    await deleteTheory({ variables: { id: theoryId } });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -81,7 +99,27 @@ export default function MyTheoriesPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           {data?.theoriesByUser.map((theory) => (
-            <TheoryCard key={theory.id} theory={theory} />
+            <div key={theory.id} className="relative group">
+              <TheoryCard theory={theory} />
+              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Link
+                  to={`/edit/${theory.id}`}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDelete(theory.id);
+                  }}
+                  disabled={deletingId === theory.id}
+                  className="bg-red-600 hover:bg-red-500 disabled:bg-gray-600 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  {deletingId === theory.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}

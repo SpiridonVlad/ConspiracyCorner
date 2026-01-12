@@ -1,5 +1,6 @@
 package com.conspiracy.forum.service;
 
+import com.conspiracy.forum.config.TestMailConfig;
 import com.conspiracy.forum.dto.PageInput;
 import com.conspiracy.forum.dto.TheoryFilter;
 import com.conspiracy.forum.dto.TheoryInput;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@Import(TestMailConfig.class)
 class TheoryServiceTest {
 
     @Autowired

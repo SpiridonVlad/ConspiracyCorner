@@ -84,7 +84,6 @@ public class TheoryResolver {
 
     @SchemaMapping(typeName = "Theory", field = "author")
     public User getAuthor(Theory theory) {
-        // Return null or anonymous placeholder if anonymous post
         if (theory.isAnonymousPost()) {
             return null;
         }
