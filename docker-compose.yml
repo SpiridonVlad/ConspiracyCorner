@@ -8,6 +8,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/conspiracy_forum
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
+      - MAIL_USERNAME=iustin.spiridon@gmail.com
+      - MAIL_PASSWORD=zcpv ftnf utmr eckh
     depends_on:
       - db
     networks:

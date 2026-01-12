@@ -58,7 +58,7 @@ CREATE TABLE votes (
     user_id BIGINT NOT NULL,
     theory_id BIGINT,
     comment_id BIGINT,
-    value INTEGER NOT NULL,
+    vote_value INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_vote_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_vote_theory FOREIGN KEY (theory_id) REFERENCES theories(id),

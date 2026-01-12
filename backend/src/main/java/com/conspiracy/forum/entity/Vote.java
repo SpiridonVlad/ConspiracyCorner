@@ -36,7 +36,7 @@ public class Vote {
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
-    @Column(nullable = false)
+    @Column(name = "vote_value", nullable = false)
     private int value; // 1 for upvote, -1 for downvote
 
     @CreationTimestamp
